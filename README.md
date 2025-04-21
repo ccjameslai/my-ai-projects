@@ -4,7 +4,7 @@
 
 ## 📁 專案列表
 
-- [Project Name 1](projects/Doc2Markdown) - 將多種文件格式（PDF、Word、Excel、CSV、JPG 等）自動解析為 Markdown 格式，並支援圖片擷取。
+- [Doc2Markdown](projects/Doc2Markdown) - 將多種文件格式（PDF、Word、Excel、CSV、JPG 等）自動解析為 Markdown 格式，並支援圖片擷取。
 - [Project Name 2](projects/project-name-2) - xxx 工具與應用
 
 ## 🔧 技術棧
