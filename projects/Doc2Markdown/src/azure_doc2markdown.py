@@ -27,16 +27,6 @@ Reference : https://learn.microsoft.com/en-us/python/api/overview/azure/ai-docum
 
 load_dotenv()
 
-# 定義本地資料夾路徑
-
-SPLIT_DIR = r"D:\Work\CTBC\split_files"
-MD_DIR = r"D:\Work\CTBC\md_files"
-IMG_DIR = r"D:\Work\CTBC\image_files"
-
-dirs = [SPLIT_DIR, MD_DIR, IMG_DIR]
-for _dir in dirs:
-    os.makedirs(_dir, exist_ok=True)
-
 # 讀完.env 再印出
 load_dotenv(override=True)
 
@@ -60,8 +50,8 @@ def parse_to_md(md_dir, file_path, image_paths):
     documents = Azure_Doc(file_path)
     target = documents[0].page_content
 
-    # name = os.path.splitext(file_path)[0]
-    name = os.path.basename(file_path).replace(".pdf","")
+    # name = os.path.splitext(os.path.basename(file_path))[0]
+    name = Path(file_path).stem
     
     if image_paths:
         image_iter = iter(image_paths)  # 產生 image_paths 的迭代器
@@ -144,7 +134,9 @@ def extract_text_and_figures(pdf_path, output_img_dir, output_md_dir):
         page_text_blocks = []
         figure_blocks = []
         figure_polygons = set()
-
+        
+        figures = result.figures if result.figures is not None else []
+        
         # === 文字區塊 ===
         for line in page.lines:
             polygon = line.polygon
@@ -154,7 +146,7 @@ def extract_text_and_figures(pdf_path, output_img_dir, output_md_dir):
 
             # 判斷是否與任何圖形區域重疊
             overlap = False
-            figures = result.figures if result.figures is not None else []
+            # figures = result.figures if result.figures is not None else []
             for fig in figures:
                 if fig.bounding_regions[0].page_number != page_idx:
                     continue
@@ -238,7 +230,8 @@ def extract_figure_images(input_path, output_dir):
     operation_id = poller.details["operation_id"]
     
     image_paths = []
-    base_name = os.path.basename(input_path).replace(".pdf", "")
+    # base_name = os.path.basename(input_path).replace(".pdf", "")
+    base_name = Path(input_path).stem
     if result.figures:
         for figure in result.figures:
             if figure.id:
@@ -302,7 +295,8 @@ def extract_excel_charts_as_images(excel_path, output_dir):
 
                     # 複製圖表
                     shape.api.Copy()
-
+                    time.sleep(2)  # 等待剪貼簿穩定
+                    
                     # 貼上到暫存工作表
                     temp_sheet.activate()
                     temp_sheet.range("A1").select()
@@ -341,12 +335,12 @@ def extract_excel_charts_as_images(excel_path, output_dir):
     return chart_paths
 
 def process_xlsx_file(xlsx_path):
-    os.makedirs(MD_DIR, exist_ok=True)
-    os.makedirs(IMG_DIR, exist_ok=True)
+    # os.makedirs(MD_DIR, exist_ok=True)
+    # os.makedirs(IMG_DIR, exist_ok=True)
 
     wb = load_workbook(xlsx_path, data_only=True)
-    base_name = os.path.splitext(os.path.basename(xlsx_path))[0]
-
+    base_name = Path(xlsx_path).stem
+    
     chart_images = extract_excel_charts_as_images(xlsx_path, IMG_DIR)
     chart_image_index = 0
 
@@ -395,9 +389,9 @@ def process_docx_file(docx_path):
     process_pdf_file(word2pdf_path)
 
 def process_file(file_path):
-    os.makedirs(SPLIT_DIR, exist_ok=True)
-    os.makedirs(IMG_DIR, exist_ok=True)
-    os.makedirs(MD_DIR, exist_ok=True)
+    # os.makedirs(SPLIT_DIR, exist_ok=True)
+    # os.makedirs(IMG_DIR, exist_ok=True)
+    # os.makedirs(MD_DIR, exist_ok=True)
 
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".pdf":
@@ -413,43 +407,86 @@ def process_file(file_path):
     else:
         print(f"Unsupported file type: {ext}")
 
-def merge_markdown_files(input_folder, output_dir, file_name):
-    """
-    Merge Markdown (.md) files in numerical order (e.g., 'page_1', 'page_2') into a single Markdown file.
+# def merge_markdown_files(input_folder, output_dir, file_name):
+#     """
+#     Merge Markdown (.md) files in numerical order (e.g., 'page_1', 'page_2') into a single Markdown file.
 
-    Args:
-        input_folder (str): The folder containing the Markdown files to merge.
-        output_file (str): The path to the output Markdown file.
-        file_name (str): The name of merged markdown file
-    """
+#     Args:
+#         input_folder (str): The folder containing the Markdown files to merge.
+#         output_file (str): The path to the output Markdown file.
+#         file_name (str): The name of merged markdown file
+#     """
     
-    try:
-        # Get a list of all .md files in the input folder
-        md_files = glob(os.path.join(input_folder, f"{file_name}*"))
+#     try:
+#         # Get a list of all .md files in the input folder
+#         md_files = glob(os.path.join(input_folder, f"{file_name}*"))
         
-        # Sort files based on the numerical value in their filenames (e.g., 'page_1', 'page_2')
-        md_files.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
+#         # Sort files based on the numerical value in their filenames (e.g., 'page_1', 'page_2')
+#         md_files.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
         
-        output_file_path = os.path.join(output_dir, file_name + ".md")
+#         output_file_path = os.path.join(output_dir, file_name + ".md")
         
-        # for file_path in range(md_files):
-        for file_path in tqdm(md_files):    
-            with open(output_file_path, 'a', encoding='utf-8') as outfile:
-                with open(os.path.join(input_folder, file_path), 'r', encoding='utf-8') as infile:
-                    content = infile.read()
-                    # Write the content of the current file to the output file
-                    outfile.write(content)
-                    outfile.write("\n")  # Add spacing between files
+#         # for file_path in range(md_files):
+#         for file_path in tqdm(md_files):    
+#             with open(output_file_path, 'a', encoding='utf-8') as outfile:
+#                 with open(os.path.join(input_folder, file_path), 'r', encoding='utf-8') as infile:
+#                     content = infile.read()
+#                     # Write the content of the current file to the output file
+#                     outfile.write(content)
+#                     outfile.write("\n")  # Add spacing between files
 
-        print(f"Successfully merged Markdown files into '{output_dir}'.")
+#         print(f"Successfully merged Markdown files into '{output_dir}'.")
+
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+
+def get_sort_key(filename):
+    """
+    從檔名中提取頁碼，否則回傳 float('inf') 排在最後
+    """
+    basename = os.path.basename(filename)
+    match = re.search(r'_page_(\d+)', basename)
+    if match:
+        return int(match.group(1))
+    else:
+        return float('inf')  # 無頁碼的排在最後
+
+def merge_markdown_files(input_folder, output_dir, file_name):
+    try:
+        # 找出所有以 file_name 為開頭的 .md 檔案
+        md_files = glob(os.path.join(input_folder, f"{file_name}*.md"))
+        
+        # 依據頁碼排序，無頁碼的排最後
+        md_files.sort(key=get_sort_key)
+
+        output_file_path = os.path.join(output_dir, file_name + ".md")
+
+        with open(output_file_path, 'w', encoding='utf-8') as outfile:
+            for file_path in tqdm(md_files, desc="Merging markdown files"):
+                with open(file_path, 'r', encoding='utf-8') as infile:
+                    content = infile.read()
+                    outfile.write(content)
+                    outfile.write("\n")
+
+        print(f"✅ Successfully merged Markdown files into '{output_file_path}'.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
 
-if __name__ == "__main__":
 
-    INPUT_DIR = r"D:\Work\TEST\input"   # 指定資料夾
-    OUTPUT_DIR = r"D:\Work\TEST\output_files" # 輸出資料夾
+if __name__ == "__main__":
+    
+    # 定義本地資料夾路徑
+    ROOT_DIR = r"D:\Work\TEST"
+    INPUT_DIR = os.path.join(ROOT_DIR, "input")
+    SPLIT_DIR = os.path.join(ROOT_DIR, "split_files")
+    MD_DIR = os.path.join(ROOT_DIR, "md_files")
+    IMG_DIR = os.path.join(ROOT_DIR, "image_files")
+    OUTPUT_DIR = os.path.join(ROOT_DIR, "output_files")
+    
+    dirs = [SPLIT_DIR, MD_DIR, IMG_DIR, OUTPUT_DIR]
+    for _dir in dirs:
+        os.makedirs(_dir, exist_ok=True)
 
     for filename in os.listdir(INPUT_DIR):
         file_path = os.path.join(INPUT_DIR, filename)
