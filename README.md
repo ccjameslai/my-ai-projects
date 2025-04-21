@@ -22,3 +22,8 @@ git clone https://github.com/your-username/my-ai-projects.git
 cd my-ai-projects/projects/project-name-1
 pip install -r requirements.txt
 python main.py
+```
+
+## 📝 授權
+
+本專案依據 [MIT License](LICENSE) 授權。你可以自由使用、修改與散佈此程式碼。
