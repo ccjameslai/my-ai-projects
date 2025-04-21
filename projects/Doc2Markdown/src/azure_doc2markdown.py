@@ -335,8 +335,8 @@ def extract_excel_charts_as_images(excel_path, output_dir):
     return chart_paths
 
 def process_xlsx_file(xlsx_path):
-    # os.makedirs(MD_DIR, exist_ok=True)
-    # os.makedirs(IMG_DIR, exist_ok=True)
+    os.makedirs(MD_DIR, exist_ok=True)
+    os.makedirs(IMG_DIR, exist_ok=True)
 
     wb = load_workbook(xlsx_path, data_only=True)
     base_name = Path(xlsx_path).stem
@@ -389,9 +389,9 @@ def process_docx_file(docx_path):
     process_pdf_file(word2pdf_path)
 
 def process_file(file_path):
-    # os.makedirs(SPLIT_DIR, exist_ok=True)
-    # os.makedirs(IMG_DIR, exist_ok=True)
-    # os.makedirs(MD_DIR, exist_ok=True)
+    os.makedirs(SPLIT_DIR, exist_ok=True)
+    os.makedirs(IMG_DIR, exist_ok=True)
+    os.makedirs(MD_DIR, exist_ok=True)
 
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".pdf":
@@ -406,39 +406,6 @@ def process_file(file_path):
         process_docx_file(file_path)
     else:
         print(f"Unsupported file type: {ext}")
-
-# def merge_markdown_files(input_folder, output_dir, file_name):
-#     """
-#     Merge Markdown (.md) files in numerical order (e.g., 'page_1', 'page_2') into a single Markdown file.
-
-#     Args:
-#         input_folder (str): The folder containing the Markdown files to merge.
-#         output_file (str): The path to the output Markdown file.
-#         file_name (str): The name of merged markdown file
-#     """
-    
-#     try:
-#         # Get a list of all .md files in the input folder
-#         md_files = glob(os.path.join(input_folder, f"{file_name}*"))
-        
-#         # Sort files based on the numerical value in their filenames (e.g., 'page_1', 'page_2')
-#         md_files.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
-        
-#         output_file_path = os.path.join(output_dir, file_name + ".md")
-        
-#         # for file_path in range(md_files):
-#         for file_path in tqdm(md_files):    
-#             with open(output_file_path, 'a', encoding='utf-8') as outfile:
-#                 with open(os.path.join(input_folder, file_path), 'r', encoding='utf-8') as infile:
-#                     content = infile.read()
-#                     # Write the content of the current file to the output file
-#                     outfile.write(content)
-#                     outfile.write("\n")  # Add spacing between files
-
-#         print(f"Successfully merged Markdown files into '{output_dir}'.")
-
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
 
 def get_sort_key(filename):
     """
@@ -468,7 +435,7 @@ def merge_markdown_files(input_folder, output_dir, file_name):
                     outfile.write(content)
                     outfile.write("\n")
 
-        print(f"✅ Successfully merged Markdown files into '{output_file_path}'.")
+        print(f"Successfully merged Markdown files into '{output_file_path}'.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
