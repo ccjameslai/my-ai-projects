@@ -29,9 +29,9 @@ load_dotenv()
 
 # 定義本地資料夾路徑
 
-SPLIT_DIR = "D:\Work\CTBC\split_files"
-MD_DIR = "D:\Work\CTBC\md_files"
-IMG_DIR = "D:\Work\CTBC\image_files"
+SPLIT_DIR = r"D:\Work\CTBC\split_files"
+MD_DIR = r"D:\Work\CTBC\md_files"
+IMG_DIR = r"D:\Work\CTBC\image_files"
 
 dirs = [SPLIT_DIR, MD_DIR, IMG_DIR]
 for _dir in dirs:
@@ -56,7 +56,7 @@ def Azure_Doc(file_path):
     documents = loader.load()
     return documents
 
-def parse_to_md(md_dir, file_path, filename, image_paths):
+def parse_to_md(md_dir, file_path, image_paths):
     documents = Azure_Doc(file_path)
     target = documents[0].page_content
 
@@ -267,9 +267,8 @@ def process_pdf_file(pdf_file_path):
         extract_text_and_figures(single_page_pdf_path, IMG_DIR, MD_DIR)
 
 def process_image_file(file_path):
-    filename = os.path.basename(file_path)
     image_paths = extract_figure_images(file_path, IMG_DIR)
-    parse_to_md(MD_DIR, file_path, filename, image_paths)
+    parse_to_md(MD_DIR, file_path, image_paths)
     
 
 def process_csv_file(csv_path):
@@ -426,7 +425,6 @@ def merge_markdown_files(input_folder, output_dir, file_name):
     
     try:
         # Get a list of all .md files in the input folder
-        # md_files = [f for f in os.listdir(input_folder) if f.endswith('.md')]
         md_files = glob(os.path.join(input_folder, f"{file_name}*"))
         
         # Sort files based on the numerical value in their filenames (e.g., 'page_1', 'page_2')
